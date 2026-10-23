@@ -1,30 +1,31 @@
+const repo = require("../repositories/resourceRepository");
 
-const resources = require("../data/resources");
-
-// Get, search, filter, and sort resources
-const getResources = (req, res) => {
-  const search = (req.query.search || "").toLowerCase();
-  const { subject, level } = req.query;
-
-  const filteredResources = resources
-    .filter((resource) => {
-      const matchesSearch =
-        resource.title.toLowerCase().includes(search) ||
-        resource.subject.toLowerCase().includes(search);
-
-      const matchesSubject = !subject || resource.subject === subject;
-      const matchesLevel = !level || resource.level === level;
-
-      return matchesSearch && matchesSubject && matchesLevel;
-    })
-    .sort((a, b) => (b.helpfulCount || 0) - (a.helpfulCount || 0));
-
-  return res.json({ resources: filteredResources });
+// Same response shapes as before: { resources }, { resource }, { message }.
+const handle = (fn) => async (req, res) => {
+  try {
+    await fn(req, res);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ message: Object.values(err.errors).map((e) => e.message).join(" ") });
+    }
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
 
+// Get, search, filter and sort resources
+const getResources = handle(async (req, res) => {
+  const resources = await repo.list({
+    search: req.query.search,
+    subject: req.query.subject,
+    level: req.query.level,
+  });
+  return res.json({ resources });
+});
+
 // Add a new resource
-const addResource = (req, res) => {
-  const { title, subject, description, url, level, language } = req.body;
+const addResource = handle(async (req, res) => {
+  const { title, subject, description, url, level, language } = req.body || {};
 
   if (
     typeof title !== "string" || !title.trim() ||
@@ -32,46 +33,29 @@ const addResource = (req, res) => {
     typeof description !== "string" || !description.trim() ||
     typeof url !== "string" || !url.trim()
   ) {
-    return res.status(400).json({
-      message: "Title, subject, description, and URL are required."
-    });
+    return res.status(400).json({ message: "Title, subject, description, and URL are required." });
   }
 
-  const newResource = {
-    id: Math.max(0, ...resources.map((r) => r.id)) + 1,
-    title: title.trim(),
-    subject: subject.trim(),
-    description: description.trim(),
-    url: url.trim(),
-    level: typeof level === "string" && level.trim() ? level.trim() : "Secondary",
-    language: typeof language === "string" && language.trim() ? language.trim() : "English",
-    helpfulCount: 0
-  };
-
-  resources.push(newResource);
-
-  return res.status(201).json({
-    message: "Resource added successfully.",
-    resource: newResource
+  const resource = await repo.create({
+    title, subject, description, url,
+    ...(typeof level === "string" && level.trim() ? { level } : {}),
+    ...(typeof language === "string" && language.trim() ? { language } : {}),
   });
-};
+  return res.status(201).json({ message: "Resource added successfully.", resource });
+});
 
 // Mark a resource as helpful
-const markResourceHelpful = (req, res) => {
-  const resourceId = Number(req.params.id);
-  const target = resources.find((resource) => resource.id === resourceId);
+const markResourceHelpful = handle(async (req, res) => {
+  const resource = await repo.markHelpful(req.params.id);
+  if (!resource) return res.status(404).json({ message: "Resource not found" });
+  return res.json({ resource });
+});
 
-  if (!target) {
-    return res.status(404).json({ message: "Resource not found" });
-  }
+// Flag a resource for moderation (hidden after 3 flags)
+const flagResource = handle(async (req, res) => {
+  const resource = await repo.flag(req.params.id);
+  if (!resource) return res.status(404).json({ message: "Resource not found" });
+  return res.json({ resource });
+});
 
-  target.helpfulCount = (target.helpfulCount || 0) + 1;
-
-  return res.json({ resource: target });
-};
-
-module.exports = {
-  getResources,
-  addResource,
-  markResourceHelpful
-};
+module.exports = { getResources, addResource, markResourceHelpful, flagResource };

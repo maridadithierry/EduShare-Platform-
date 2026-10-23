@@ -1,10 +1,10 @@
-
 require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const resourceRoutes = require("./routes/resourceRoutes");
+const { seedIfEmpty } = require("./seed/seed");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,12 +24,16 @@ app.use("/api/resources", resourceRoutes);
 // Start server after connecting to MongoDB
 const startServer = async () => {
   await connectDB();
+  await seedIfEmpty();
 
   app.listen(PORT, () => {
     console.log(`EduShare API running on http://localhost:${PORT}`);
   });
 };
 
-startServer();
+// Only start when run directly (node server.js), so tests can import the app.
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app;
