@@ -25,7 +25,7 @@
     "testEnvironment": "node",
     "testTimeout": 60000
   },
-  "config": {
-    "mongodbMemoryServer": {}
-  }
+  "mongodbMemoryServer": {
+  "version": "7.0.14"
+}
 }
