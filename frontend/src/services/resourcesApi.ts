@@ -1,5 +1,5 @@
 export type Resource = {
-  id: number;
+  id: string;
   title: string;
   description: string;
   subject: string;
@@ -39,7 +39,7 @@ export async function getResources(params: ResourceQuery): Promise<Resource[]> {
   return payload.resources;
 }
 
-export async function markResourceHelpful(resourceId: number): Promise<Resource> {
+export async function markResourceHelpful(resourceId: string): Promise<Resource> {
   const response = await fetch(`/api/resources/${resourceId}/helpful`, {
     method: "POST",
   });

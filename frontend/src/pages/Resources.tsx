@@ -14,7 +14,7 @@ export default function Resources() {
   const [level, setLevel] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [votingForId, setVotingForId] = useState<number | null>(null);
+  const [votingForId, setVotingForId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadResources() {
@@ -36,7 +36,7 @@ export default function Resources() {
     loadResources();
   }, [subject, level]);
 
-  async function handleHelpfulVote(resourceId: number) {
+  async function handleHelpfulVote(resourceId: string) {
     try {
       setVotingForId(resourceId);
       const updated = await markResourceHelpful(resourceId);

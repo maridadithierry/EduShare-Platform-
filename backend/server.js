@@ -1,5 +1,7 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
+const fs = require("fs");
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
@@ -20,6 +22,21 @@ app.get("/health", (_req, res) => {
 
 // Resource API routes
 app.use("/api/resources", resourceRoutes);
+
+// Serve the built React app when it exists (e.g. inside the Docker image).
+// CLIENT_DIST_DIR overrides the default location of the frontend build.
+const clientDir =
+  process.env.CLIENT_DIST_DIR || path.join(__dirname, "..", "frontend", "dist");
+
+if (fs.existsSync(path.join(clientDir, "index.html"))) {
+  app.use(express.static(clientDir));
+
+  // Send index.html for client-side routes (e.g. /resources) so React Router
+  // handles them, but leave /api and /health to the routes above.
+  app.get(/^(?!\/api(\/|$)|\/health$).*/, (_req, res) => {
+    res.sendFile(path.join(clientDir, "index.html"));
+  });
+}
 
 // Start server after connecting to MongoDB
 const startServer = async () => {
