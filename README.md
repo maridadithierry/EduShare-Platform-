@@ -44,15 +44,17 @@ Planned next (see the project board): keyword search ([#8](https://github.com/ma
 
 - **Backend:** Node.js + Express (REST API)
 - **Frontend:** React + TypeScript, built with Vite, routing with React Router
-- **Database:** In-memory data store for F1; MongoDB planned ([#4](https://github.com/maridadithierry/EduShare-Platform-/issues/4))
-- **Other:** Plain CSS, ESLint, Git + GitHub (feature branches, pull requests, GitHub Projects)
+- **Database:** MongoDB, accessed through Mongoose
+- **Testing:** Jest + Supertest, with an in-memory MongoDB (`mongodb-memory-server`) so tests need no database setup
+- **Other:** Plain CSS, ESLint (frontend and backend), Git + GitHub (feature branches, pull requests, GitHub Projects)
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18 or later (includes npm)
+- [Node.js](https://nodejs.org/) 20.19 or later (includes npm); check with `node -v`
 - [Git](https://git-scm.com/)
+- A MongoDB database: [MongoDB Community](https://www.mongodb.com/try/download/community) running locally, or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
 - Ports `4000` (API) and `5173` (frontend) free on your machine
 
 ### Installation
@@ -69,7 +71,13 @@ Planned next (see the project board): keyword search ([#8](https://github.com/ma
    npm install
    ```
 
-3. Install frontend dependencies
+3. Create the backend environment file and set `MONGODB_URI` to your database
+   ```bash
+   cp .env.example .env
+   ```
+   `.env` is ignored by Git, so real connection strings and passwords never get committed.
+
+4. Install frontend dependencies
    ```bash
    cd ../frontend
    npm install
@@ -82,7 +90,7 @@ Start the API (terminal 1, from the project root):
 cd backend
 npm run dev
 ```
-The API runs at `http://localhost:4000`.
+The API runs at `http://localhost:4000`. On first start it fills an empty database with sample resources.
 
 Start the frontend (terminal 2, from the project root):
 ```bash
@@ -91,11 +99,24 @@ npm run dev
 ```
 The app runs at `http://localhost:5173`. The Vite dev server forwards `/api` requests to the backend.
 
-Other useful commands (in `frontend/`):
+To run the production build from a single server, build the frontend and start the backend. Express then serves both the React app and the API at `http://localhost:4000`:
 ```bash
-npm run build   # type-check and build for production
-npm run lint    # run ESLint
+cd frontend && npm run build
+cd ../backend && npm start
 ```
+
+### Testing and linting
+
+```bash
+cd backend
+npm run lint    # ESLint; exits with an error if any rule fails
+npm test        # Jest API tests against a temporary in-memory MongoDB
+
+cd ../frontend
+npm run lint    # ESLint
+npm run build   # type-check and build for production
+```
+The first `npm test` downloads a MongoDB test binary (about 100 MB), pinned to version 7.0.14 in `backend/package.json`, so it can take a few minutes. Later runs take around 10 seconds.
 
 ## Usage
 
@@ -112,26 +133,43 @@ curl http://localhost:4000/health
 # List all resources (sorted by helpful votes)
 curl http://localhost:4000/api/resources
 
-# Filter by subject and level
+# Filter by subject and level, or search titles and subjects
 curl "http://localhost:4000/api/resources?subject=Mathematics&level=Primary"
+curl "http://localhost:4000/api/resources?search=algebra"
 
-# Mark resource 1 as helpful
-curl -X POST http://localhost:4000/api/resources/1/helpful
+# Share a new resource
+curl -X POST http://localhost:4000/api/resources \
+  -H "Content-Type: application/json" \
+  -d '{"title":"WAEC Physics Notes","subject":"Physics","description":"Mechanics and electricity.","url":"https://example.com/physics","level":"Secondary"}'
+
+# Mark a resource as helpful (use an "id" from the list above)
+curl -X POST http://localhost:4000/api/resources/<id>/helpful
 ```
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/health` | Service health check |
-| GET | `/api/resources?subject=&level=` | List resources, optionally filtered |
+| GET | `/api/resources?subject=&level=&search=` | List resources, optionally filtered or searched |
+| POST | `/api/resources` | Share a new resource (`title`, `subject`, `description`, `url` required) |
 | POST | `/api/resources/:id/helpful` | Add a helpful vote to a resource |
+| POST | `/api/resources/:id/flag` | Flag a resource; it is hidden after 3 flags |
 
 ## Project Structure
 
 ```
 .
 ├── backend/                  # Express REST API
+│   ├── config/               # MongoDB connection
+│   ├── controllers/          # Request handling and validation
+│   ├── models/               # Mongoose Resource schema
+│   ├── repositories/         # Database queries, kept out of controllers
+│   ├── routes/               # API route definitions
+│   ├── seed/                 # Sample resources for an empty database
+│   ├── tests/                # Jest + Supertest API tests
+│   ├── .env.example          # Environment variables template
+│   ├── eslint.config.js
 │   ├── package.json
-│   └── server.js             # API routes and in-memory resource data
+│   └── server.js             # App setup; serves the API and the built frontend
 ├── frontend/                 # React + TypeScript client (Vite)
 │   ├── public/
 │   ├── src/
