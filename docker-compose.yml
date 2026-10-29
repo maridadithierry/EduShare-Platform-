@@ -1,0 +1,54 @@
+services:
+  # MongoDB database: official image pinned to a specific version
+  mongo:
+    image: mongo:7.0
+    container_name: edushare-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-edushare}
+    volumes:
+      # Named volume so data survives container restarts and recreation
+      - mongo_data:/data/db
+    networks:
+      - edushare-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Application: Express API serving the built React frontend (see Dockerfile)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: edushare-app
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-4000}
+      # The database host is the service name "mongo", not localhost
+      MONGODB_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB:-edushare}?authSource=admin
+    ports:
+      - "${PORT:-4000}:${PORT:-4000}"
+    networks:
+      - edushare-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:${PORT:-4000}/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  edushare-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
