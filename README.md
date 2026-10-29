@@ -200,12 +200,14 @@ Pushes directly to `main` do not trigger the workflow, because all code reaches 
 
 - CI #1: commit `dada099` (Add CI workflow for lint, test, and Docker build): [run](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541), jobs: [Backend (lint and test)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541/job/123669325520), [Frontend (lint and build)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541/job/123669325127), [Docker build](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541/job/123669587165)
 - CI #2: pull request #26: [run](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390), jobs: [Backend (lint and test)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390/job/123670213101), [Frontend (lint and build)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390/job/123670213370), [Docker build](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390/job/123670446326)
-- CI #3: [run link]
+- CI #3: pull request #27 (this README update): [run](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40949436773)
 
 **Failed run and fix**
 
-- Failed: [run link] ([what broke])
-- Fixed: [run link] ([what fixed it])
+To prove the pipeline catches mistakes, [PR #28](https://github.com/maridadithierry/EduShare-Platform-/pull/28) added an unused variable to `backend/server.js` on purpose.
+
+- Failed: commit `43bf9a7`: [run](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40949530044). ESLint reported `'unusedValue' is assigned a value but never used`, the [Backend job](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40949530044/job/123713656815) failed, and the Docker build was skipped
+- Fixed: commit `35822a7` removed the variable: [run](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40949647591). All three jobs passed
 
 **Pull request with CI checks and review**
 
