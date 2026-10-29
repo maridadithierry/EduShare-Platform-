@@ -10,6 +10,7 @@ const { seedIfEmpty } = require("./seed/seed");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const unusedValue = "this breaks lint on purpose";
 
 // Middleware
 app.use(cors());
