@@ -1,220 +1,251 @@
 # EduShare Platform
 
-**Sharing knowledge, empowering African students: a lightweight hub for finding, sharing and rating low-cost learning resources.**
+**Sharing Knowledge, Empowering African Students**
 
-## African Context
+EduShare is a simple web platform where students and teachers can find, share and rate affordable learning resources. Users can browse resources, filter them by subject and level, mark the ones that help, and share or flag resources through the API.
 
-Across many African communities, students prepare for national exams and university courses with study material scattered across WhatsApp groups, photocopied notes and expensive commercial platforms. Good revision content exists, but it is hard to find, hard to judge, and often out of reach for students with limited data budgets or no access to paid services. The result is unequal access to exam preparation, and peer-to-peer learning that stays locked inside small groups.
+---
 
-EduShare addresses this by giving students and teachers one simple, low-bandwidth place to discover resources, filter them by subject and education level, and vote for the ones that actually help, so the most useful content rises to the top for everyone.
+## Problem Statement
 
-## Team Members
-
-| Name | Role | Student ID |
-|------|------|------------|
-| Maridadi Thierry | Team Lead, Backend (API routes & application logic) | [Student ID] |
-| Hannah Tuyishimire | Frontend Features & API Integration | [Student ID] |
-| Ange Umutoni | Frontend Design & Layout | [Student ID] |
-| Joshua Mugisha | Data Management & API Testing | [Student ID] |
-
-## Project Overview
-
-EduShare is a web application where learners can browse a shared catalog of learning resources such as revision packs, quiz sheets and study guides. Each resource is tagged with a subject, an education level (Primary, Secondary, University) and a language, so students can narrow the catalog down to exactly what they need for their exams.
-
-Students can mark a resource as **helpful**. Resources are ranked by their helpful votes, so the community collectively surfaces the best material instead of relying on a single curator. Teachers and tutors can use the same catalog to distribute their lesson materials to a wider audience.
-
-The application is split into a React frontend and a Node.js/Express REST API. This separation keeps the user interface and the business logic independent, so each part can be developed, tested, containerized and deployed on its own as the project evolves towards a service-based architecture in later phases.
+Many students across Africa struggle to access affordable, relevant learning materials. Useful notes, past papers and study guides often stay scattered across personal devices and group chats, where other learners cannot find them. EduShare brings these resources into one searchable place so that knowledge can be shared freely between students and teachers.
 
 ## Target Users
 
-- **Secondary school students** preparing for national exams
-- **University students** sharing and finding revision content
-- **Teachers and tutors** who want to distribute lesson resources beyond their own classroom
+- **Students** looking for study materials by subject and level
+- **Teachers and tutors** who want to share resources with learners
+- **Study groups** that need one place to collect and rate materials
 
-## Core Features
+## Features
 
-- **Feature 1: Browse resources.** View a shared catalog of learning resources loaded from the API.
-- **Feature 2: Filter by subject and level.** Narrow results to a specific subject (e.g. Mathematics, Science, ICT) and education level.
-- **Feature 3: Helpful voting.** Mark a resource as helpful; the list re-ranks so the most useful content appears first.
-- **Feature 4: Responsive interface.** Works on desktop and mobile, with clear loading, error and empty states.
+- Browse all shared learning resources
+- Filter resources by subject and level
+- Mark a resource as helpful (resources are sorted by helpfulness)
+- Responsive layout that works on mobile and desktop
+- Through the API: search by keyword, add a new resource, and flag inappropriate resources (resources flagged 3 times are hidden)
 
-Planned next (see the project board): keyword search ([#8](https://github.com/maridadithierry/EduShare-Platform-/issues/8)), sharing new resources through a form ([#9](https://github.com/maridadithierry/EduShare-Platform-/issues/9)), and resource detail pages ([#10](https://github.com/maridadithierry/EduShare-Platform-/issues/10)).
+Planned next (see the project board): keyword search in the UI ([#8](https://github.com/maridadithierry/EduShare-Platform-/issues/8)), a form to share new resources ([#9](https://github.com/maridadithierry/EduShare-Platform-/issues/9)) and resource detail pages ([#10](https://github.com/maridadithierry/EduShare-Platform-/issues/10)).
 
-## Technology Stack
+---
 
-- **Backend:** Node.js + Express (REST API)
-- **Frontend:** React + TypeScript, built with Vite, routing with React Router
-- **Database:** MongoDB, accessed through Mongoose
-- **Testing:** Jest + Supertest, with an in-memory MongoDB (`mongodb-memory-server`) so tests need no database setup
-- **Other:** Plain CSS, ESLint (frontend and backend), Git + GitHub (feature branches, pull requests, GitHub Projects)
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | React, TypeScript, Vite, React Router |
+| Backend | Node.js, Express |
+| Database | MongoDB (Mongoose) |
+| Testing | Jest, Supertest, mongodb-memory-server |
+| DevOps | Docker, Docker Compose, GitHub Actions |
+
+## Project Structure
+
+```
+EduShare-Platform-/
+├── .github/workflows/ci.yml   # CI pipeline (lint, test, build, Docker)
+├── backend/                   # Express API, MongoDB models, tests
+│   ├── .env.example           # Environment variable template (running without Docker)
+│   └── tests/                 # API tests (Jest + Supertest)
+├── frontend/                  # React + TypeScript app (Vite)
+│   ├── .npmrc                 # legacy-peer-deps=true
+│   └── src/
+│       ├── components/        # Navbar, Footer
+│       ├── pages/             # Home, Resources
+│       └── services/          # API calls (resourcesApi.ts)
+├── .dockerignore              # Files kept out of the Docker image
+├── .env.example               # Environment variable template for Docker Compose
+├── Dockerfile                 # Multi-stage build: frontend build, then backend runtime
+├── docker-compose.yml         # App + MongoDB services
+└── README.md
+```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 20.19 or later (includes npm); check with `node -v`
-- [Git](https://git-scm.com/)
-- A MongoDB database: [MongoDB Community](https://www.mongodb.com/try/download/community) running locally, or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
-- Ports `4000` (API) and `5173` (frontend) free on your machine
+- Node.js **20.19+ or 22.x**
+- npm
+- MongoDB (local or Atlas) for running the backend outside of Docker and tests
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (includes Docker Compose) to run the app in containers
 
-### Installation
+### 1. Clone the repository
 
-1. Clone the repository
-   ```bash
-   git clone https://github.com/maridadithierry/EduShare-Platform-.git
-   cd EduShare-Platform-
-   ```
+```bash
+git clone https://github.com/maridadithierry/EduShare-Platform-.git
+cd EduShare-Platform-
+```
 
-2. Install backend dependencies
-   ```bash
-   cd backend
-   npm install
-   ```
+### 2. Run with Docker Compose (recommended)
 
-3. Create the backend environment file and set `MONGODB_URI` to your database
-   ```bash
-   cp .env.example .env
-   ```
-   `.env` is ignored by Git, so real connection strings and passwords never get committed.
+This starts the whole app, the Express API serving the built React frontend, together with a MongoDB database. No Node.js or MongoDB install is needed.
 
-4. Install frontend dependencies
-   ```bash
-   cd ../frontend
-   npm install
-   ```
+```bash
+cp .env.example .env    # then set your own MONGO_PASSWORD
+docker compose up --build
+```
 
-### Run the application
+Open http://localhost:4000 in the browser. The API runs on the same address (for example http://localhost:4000/health). On first start the database is filled with sample resources.
 
-Start the API (terminal 1, from the project root):
+| Command | What it does |
+|---------|--------------|
+| `docker compose up --build -d` | Build and start in the background |
+| `docker compose ps` | Show the containers and whether they are healthy |
+| `docker compose logs -f app` | Follow the app logs |
+| `docker compose down` | Stop and remove the containers (database data is kept) |
+| `docker compose down -v` | Stop and also delete the database volume |
+
+How it is set up:
+
+- **`app`** is built from the `Dockerfile` and waits until **`mongo`** reports healthy before starting
+- Both services share a private network; the app reaches the database at the hostname `mongo`, and the database port is not exposed to your machine
+- Database files live in the named volume `mongo_data`, so data survives restarts
+- Credentials come from the git-ignored `.env` file, never from the repository
+
+> **Note:** Avoid special characters (`@ : / ?`) in `MONGO_PASSWORD`, because it is placed inside the database connection URL.
+
+### 3. Run the backend without Docker
+
 ```bash
 cd backend
-npm run dev
+cp .env.example .env    # then fill in your MongoDB connection string
+npm ci
+npm run dev             # or: npm start
 ```
-The API runs at `http://localhost:4000`. On first start it fills an empty database with sample resources.
 
-Start the frontend (terminal 2, from the project root):
+To load sample resources into the database:
+
+```bash
+npm run seed
+```
+
+### 4. Run the frontend without Docker
+
+In a second terminal:
+
 ```bash
 cd frontend
+npm ci
 npm run dev
 ```
-The app runs at `http://localhost:5173`. The Vite dev server forwards `/api` requests to the backend.
 
-To run the production build from a single server, build the frontend and start the backend. Express then serves both the React app and the API at `http://localhost:4000`:
-```bash
-cd frontend && npm run build
-cd ../backend && npm start
-```
+Open http://localhost:5173 in the browser. The Vite dev server forwards `/api` requests to the backend on port 4000.
 
-### Testing and linting
+> **Note:** If `npm install` fails with `Cannot read properties of null (reading 'edgesOut')`, run `npm install --legacy-peer-deps`. The `frontend/.npmrc` file already sets this for normal installs.
+
+### 5. Run the tests and linting
 
 ```bash
 cd backend
-npm run lint    # ESLint; exits with an error if any rule fails
-npm test        # Jest API tests against a temporary in-memory MongoDB
+npm run lint
+npm test
 
 cd ../frontend
-npm run lint    # ESLint
-npm run build   # type-check and build for production
+npm run lint
+npm run build
 ```
-The first `npm test` downloads a MongoDB test binary (about 100 MB), pinned to version 7.0.14 in `backend/package.json`, so it can take a few minutes. Later runs take around 10 seconds.
 
-## Usage
+The tests use an in-memory MongoDB, so no database setup is needed. The first run downloads a MongoDB binary and may take longer.
 
-1. Open `http://localhost:5173` and click **Explore Resources**, or go straight to `http://localhost:5173/resources`.
-2. Use the **Subject** and **Level** dropdowns to filter the catalog.
-3. Click **Helpful** on a resource; its count goes up and the list re-ranks.
+### 6. Build the Docker image on its own
 
-The API can also be called directly:
+From the repository root:
 
 ```bash
-# Health check
-curl http://localhost:4000/health
-
-# List all resources (sorted by helpful votes)
-curl http://localhost:4000/api/resources
-
-# Filter by subject and level, or search titles and subjects
-curl "http://localhost:4000/api/resources?subject=Mathematics&level=Primary"
-curl "http://localhost:4000/api/resources?search=algebra"
-
-# Share a new resource
-curl -X POST http://localhost:4000/api/resources \
-  -H "Content-Type: application/json" \
-  -d '{"title":"WAEC Physics Notes","subject":"Physics","description":"Mechanics and electricity.","url":"https://example.com/physics","level":"Secondary"}'
-
-# Mark a resource as helpful (use an "id" from the list above)
-curl -X POST http://localhost:4000/api/resources/<id>/helpful
+docker build -t edushare .
 ```
+
+---
+
+## API Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/health` | Service health check |
-| GET | `/api/resources?subject=&level=&search=` | List resources, optionally filtered or searched |
-| POST | `/api/resources` | Share a new resource (`title`, `subject`, `description`, `url` required) |
-| POST | `/api/resources/:id/helpful` | Add a helpful vote to a resource |
-| POST | `/api/resources/:id/flag` | Flag a resource; it is hidden after 3 flags |
+| GET | `/health` | Health check (used by Docker) |
+| GET | `/api/resources` | List resources (supports `?subject=`, `?level=` and `?search=`) |
+| POST | `/api/resources` | Create a new resource (`title`, `subject`, `description`, `url` required) |
+| POST | `/api/resources/:id/helpful` | Mark a resource as helpful |
+| POST | `/api/resources/:id/flag` | Flag a resource as inappropriate |
 
-## Project Structure
+Resource ids are MongoDB ObjectIds and are returned as strings.
 
-```
-.
-├── backend/                  # Express REST API
-│   ├── config/               # MongoDB connection
-│   ├── controllers/          # Request handling and validation
-│   ├── models/               # Mongoose Resource schema
-│   ├── repositories/         # Database queries, kept out of controllers
-│   ├── routes/               # API route definitions
-│   ├── seed/                 # Sample resources for an empty database
-│   ├── tests/                # Jest + Supertest API tests
-│   ├── .env.example          # Environment variables template
-│   ├── eslint.config.js
-│   ├── package.json
-│   └── server.js             # App setup; serves the API and the built frontend
-├── frontend/                 # React + TypeScript client (Vite)
-│   ├── public/
-│   ├── src/
-│   │   ├── components/       # Navbar, Footer
-│   │   ├── pages/            # Home, Resources
-│   │   ├── services/         # resourcesApi.ts: API calls, kept out of UI components
-│   │   ├── App.tsx           # Routes
-│   │   └── main.tsx
-│   ├── package.json
-│   └── vite.config.ts        # Dev server and /api proxy
-├── .gitignore
-├── LICENSE
-└── README.md
-```
+### Security measures
 
-## Collaboration Workflow
+- Query parameters are checked to be plain strings, which blocks NoSQL injection attempts such as `?subject[$ne]=x`
+- User search input is escaped before being used in database queries
+- Resource ids are validated before querying
+- Secrets are kept in `.env` files, which are excluded from version control and from the Docker image; only `.env.example` files with placeholders are committed
+- The app container runs as a non-root user, and the database is only reachable from inside the Docker network
 
-1. Pick an issue from the project board and move it to **In progress**.
-2. Create a branch from the latest `main` (e.g. `feature/search-resources`).
-3. Commit in small, focused steps and push the branch.
-4. Open a pull request to `main` with `Closes #<issue>` in the description.
-5. At least one teammate reviews and approves; all conversations are resolved.
-6. Merge the pull request; the issue closes and moves to **Done**.
+### Known limitations
 
-## Security & Branch Protection
+- The helpful and flag endpoints have no user accounts or rate limiting yet, so one person can vote or flag repeatedly.
 
-- **`.gitignore`** excludes dependencies (`node_modules/`), build output, logs, IDE files and all environment/secret files (`.env`, `.env.*`, `config.local.*`), so secrets and generated files never reach the repository.
-- **Branch protection on `main`** ([#11](https://github.com/maridadithierry/EduShare-Platform-/issues/11)):
+---
 
-| Rule | Why it matters |
-|------|----------------|
-| Require a pull request before merging | No one can push directly to `main`; every change is visible and discussable |
-| Require 1 approval | Every change gets a second pair of eyes before it ships |
-| Dismiss stale approvals on new commits | An approval only counts for the code that was actually reviewed |
-| Require status checks to pass | Broken builds or failing tests cannot be merged (CI checks added in F2) |
-| Require branches to be up to date | Changes are tested against the latest `main`, avoiding surprise conflicts |
-| Require conversation resolution | Review feedback is addressed, not ignored |
-| Include administrators | The rules apply to everyone, including the team lead |
+## CI/CD Pipeline
 
-## Links
+The GitHub Actions workflow ([`ci.yml`](.github/workflows/ci.yml)) runs on every push to a feature branch and on every pull request into `main`. It has three jobs:
 
-- [Project Board](https://github.com/users/maridadithierry/projects/15)
-- [Issues](https://github.com/maridadithierry/EduShare-Platform-/issues)
-- [Pull Requests](https://github.com/maridadithierry/EduShare-Platform-/pulls)
+1. **Backend (lint and test)**: installs dependencies, runs ESLint, and runs the Jest test suite
+2. **Frontend (lint and build)**: installs dependencies, runs ESLint, and builds the production bundle
+3. **Docker build**: builds the Docker image, and only runs after both the backend and frontend jobs pass
+
+Pushes directly to `main` do not trigger the workflow, because all code reaches `main` through pull requests that have already passed CI.
+
+## CI/CD Evidence
+
+**Successful workflow runs**
+
+- CI #1: commit `dada099` (Add CI workflow for lint, test, and Docker build): [run](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541), jobs: [Backend (lint and test)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541/job/123669325520), [Frontend (lint and build)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541/job/123669325127), [Docker build](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40936787541/job/123669587165)
+- CI #2: pull request #26: [run](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390), jobs: [Backend (lint and test)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390/job/123670213101), [Frontend (lint and build)](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390/job/123670213370), [Docker build](https://github.com/maridadithierry/EduShare-Platform-/actions/runs/40937040390/job/123670446326)
+- CI #3: [run link]
+
+**Failed run and fix**
+
+- Failed: [run link] ([what broke])
+- Fixed: [run link] ([what fixed it])
+
+**Pull request with CI checks and review**
+
+- [PR #26: CI pipeline and branch protection](https://github.com/maridadithierry/EduShare-Platform-/pull/26): all checks passed, and the PR was reviewed and approved by two teammates before merging.
+
+Full run history: [Actions → CI](https://github.com/maridadithierry/EduShare-Platform-/actions/workflows/ci.yml)
+
+## Branch Protection
+
+The `main` branch is protected:
+
+- Changes must go through a pull request
+- At least one approving review is required, and approvals are dismissed when new commits are pushed
+- The CI status checks must pass before merging, and the branch must be up to date with `main`
+- Conversations must be resolved before merging
+- The rules apply to administrators too
+
+---
+
+## Team
+
+| Member | Role for F1 | Role for F2 |
+|--------|-------------|-------------|
+| Maridadi Thierry | Team Lead, Backend: API Routes and Application Logic | CI Pipeline and Branch Protection |
+| Hannah Tuyishimire | Frontend: Features and API Integration | App Preparation for Docker/CI, Documentation and Evidence |
+| Ange Umutoni | Frontend: UI/Design and Layout | Docker Compose |
+| Joshua Mugisha | Backend: Data Management and API Testing | Dockerfile |
+
+Project board: [GitHub Projects](https://github.com/users/maridadithierry/projects/15)
+
+## Contributing
+
+1. Pull the latest `main`: `git checkout main && git pull`
+2. Create a branch: `git checkout -b feature/your-feature`
+3. Commit with clear messages and push the branch
+4. Open a pull request into `main`, link the related issue (`Closes #<issue>`), and request a review
+5. Merge only after CI passes and the PR is approved
+
+Never commit `node_modules/` or `.env` files.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the terms in the [LICENSE](LICENSE) file.
