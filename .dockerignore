@@ -1,34 +1,44 @@
-# OS and editor files
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
+# Dependencies: reinstalled inside the image
+**/node_modules
+
+
+# Build output: produced inside the image
+**/dist
+**/build
+coverage
+
+
+# Secrets and local environment files: never bake into an image
+.env
+**/.env
+.env.*
+**/.env.*
+
+
+# Version control and CI
+.git
+.gitignore
+.github
+
 
 # Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
 
-# Environment and secrets
-.env
-.env.*
-!.env.example
-*.local
-config.local.*
 
-# Node modules and lock artifacts generated outside tracked folders
-node_modules/
+# Editor and OS files
+.vscode
+.idea
+.DS_Store
 
-# Build outputs
-dist/
-build/
-coverage/
-.cache/
 
-# Backend runtime temp
-backend/tmp/
+# Tests and lint config are not needed at runtime
+backend/tests
+backend/eslint.config.js
 
-# Frontend generated files
-frontend/dist/
+
+# Docker files themselves and docs are not needed at runtime
+Dockerfile
+docker-compose.yml
+.dockerignore
+*.md
